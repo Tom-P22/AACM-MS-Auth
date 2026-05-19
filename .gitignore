@@ -1,0 +1,24 @@
+target/
+*.egg-info/
+
+.idea/
+*.iml
+*.iws
+*.ipr
+
+.vscode/
+
+坚持.DS_Store
+.DS_Store
+Thumbs.db
+db_data/
+
+# Logs de la aplicación
+*.log
+.spring-boot-devtools-properties
+/logs/
+/log/
+target/
+
+# Configuraciones locales con contraseñas
+.env
