@@ -3,59 +3,67 @@ package cl.municipalidad.auth.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
 import cl.municipalidad.auth.dto.request.DtoAuthRequest;
 import cl.municipalidad.auth.dto.response.DtoAuthResponse;
-import cl.municipalidad.auth.model.UsuarioModel;
-import cl.municipalidad.auth.repository.UsuarioRepository;
-import jakarta.annotation.PostConstruct;
+import cl.municipalidad.auth.dto.response.UsuarioDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
-
 public class AuthService {
 
-    private final UsuarioRepository usuarioRepository;
+    private final RestClient restClient = RestClient.create(); 
     private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder; 
+    private final PasswordEncoder passwordEncoder;
 
-    @PostConstruct
-public void initAdminUser() {
-        java.util.Optional<UsuarioModel> existingAdmin = usuarioRepository.findByUsername("admin");
-
-        if (existingAdmin.isPresent()) {
-            UsuarioModel admin = existingAdmin.get();
-            admin.setPassword(passwordEncoder.encode("123456")); 
-            admin.setEnabled(true);
-            usuarioRepository.save(admin);
-            System.out.println("[Auth] Contraseña de 'admin' actualizada en la BD con BCrypt.");
-        } else {
-            UsuarioModel admin = new UsuarioModel();
-            admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("123456"));
-            admin.setRole("ADMIN");
-            admin.setEnabled(true);
-            usuarioRepository.save(admin);
-            System.out.println("[Auth] Usuario 'admin' creado desde cero con BCrypt.");
-        }
-    }
     public DtoAuthResponse login(DtoAuthRequest request) {
 
-        UsuarioModel usuario = usuarioRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o password incorrecto"));
+        log.info("Iniciando proceso de login para usuario {}", request.getEmail());
 
-        if (!usuario.getEnabled()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario deshabilitado");
+        UsuarioDto usuario;
+        try {
+            log.debug("Llamando a MS-Usuarios...");
+            usuario = restClient.get()
+                    .uri("http://localhost:8081/api/usuarios/buscar/email/" + request.getEmail())
+                    .retrieve()
+                    .body(UsuarioDto.class);
+
+                    log.info("Usuario activo?: {}, Tiene pass?: {}", usuario.getActivo(), (usuario.getPassword() != null));
+        } catch (Exception e) {
+            //Si usuario = 404, entonces:
+            log.error("Error al conectar con MS-Usuarios o usuario no encontrado: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o password incorrecto");
+        }
+
+        if (usuario == null) {
+            log.error("Login fallido: Usuario {} inactivo o inexistente", request.getEmail());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario deshabilitado o incorrecto");
+        }
+
+        if (!usuario.getActivo()) {
+            log.error("Login fallido: Usuario {} esta deshabilitado", request.getEmail());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o password incorrecto");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
+            log.error("Login fallido: Contraseña incorrecta para el usuario {}", request.getEmail());
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Usuario o password incorrecto");
         }
 
-        String token = jwtService.generarToken(usuario.getUsername(), usuario.getRole());
+        log.info("Login exitoso para el usuario: {} ({}) con rol {}",
+            usuario.getNombre(),
+            usuario.getEmail(),
+            usuario.getRolUsuario());
+            
+
+        String token = jwtService.generarToken(usuario.getNombre(), usuario.getRolUsuario().name());
         return new DtoAuthResponse(token);
     }
 }

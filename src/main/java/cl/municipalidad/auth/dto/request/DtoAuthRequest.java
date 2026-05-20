@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 
 public class DtoAuthRequest {
 
-    @NotBlank(message = "El username es obligatorio")
-    private String username;
+    @NotBlank(message = "El email es obligatorio")
+    private String email;
 
     @NotBlank(message = "El password es obligatorio")
     private String password;
