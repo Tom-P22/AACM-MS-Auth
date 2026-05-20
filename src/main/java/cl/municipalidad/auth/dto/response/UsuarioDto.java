@@ -5,7 +5,7 @@ import cl.municipalidad.auth.enums.RolUsuario;
 import lombok.Data;
 
 @Data
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(ignoreUnknown = true) //Ignora los datos que no le sirvan para el login
 public class UsuarioDto {
     private Long id;
     private String rut;

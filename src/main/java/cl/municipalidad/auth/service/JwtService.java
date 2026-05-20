@@ -21,7 +21,7 @@ public class JwtService {
         return JWT.create()
                 .withSubject(username)
                 .withIssuer(jwtProperties.getIssuer())
-                .withClaim("roles", List.of("ROLe_" + role))
+                .withClaim("roles", List.of("ROLE_" + role))
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + jwtProperties.getExpiration()))
                 .sign(Algorithm.HMAC256(jwtProperties.getSecret()));

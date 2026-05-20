@@ -29,20 +29,14 @@ public class AuthService {
         try {
             log.debug("Llamando a MS-Usuarios...");
             usuario = restClient.get()
-                    .uri("http://localhost:8081/api/usuarios/buscar/email/" + request.getEmail())
+                    .uri("http://localhost:8081/api/usuarios/internal/buscar/email/" + request.getEmail())
                     .retrieve()
                     .body(UsuarioDto.class);
 
-                    log.info("Usuario activo?: {}, Tiene pass?: {}", usuario.getActivo(), (usuario.getPassword() != null));
         } catch (Exception e) {
             //Si usuario = 404, entonces:
             log.error("Error al conectar con MS-Usuarios o usuario no encontrado: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o password incorrecto");
-        }
-
-        if (usuario == null) {
-            log.error("Login fallido: Usuario {} inactivo o inexistente", request.getEmail());
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario deshabilitado o incorrecto");
         }
 
         if (!usuario.getActivo()) {
