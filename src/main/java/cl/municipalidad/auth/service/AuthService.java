@@ -29,7 +29,7 @@ public class AuthService {
         try {
             log.debug("Llamando a MS-Usuarios...");
             usuario = restClient.get()
-                    .uri("http://localhost:8081/api/usuarios/internal/buscar/email/" + request.getEmail())
+                    .uri("http://localhost:8081/api/v1/usuarios/internal/buscar/email/" + request.getEmail())
                     .retrieve()
                     .body(UsuarioDto.class);
 
@@ -57,7 +57,11 @@ public class AuthService {
             usuario.getRolUsuario());
             
 
-        String token = jwtService.generarToken(usuario.getNombre(), usuario.getRolUsuario().name());
+        String token = jwtService.generarToken(
+            usuario.getNombre(),
+            usuario.getRolUsuario().name(),
+            usuario.getEmail());
+             
         return new DtoAuthResponse(token);
     }
 }

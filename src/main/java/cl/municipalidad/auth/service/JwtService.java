@@ -17,11 +17,12 @@ public class JwtService {
 
     private final JwtProperties jwtProperties;
 
-    public String generarToken(String username, String role) {
+    public String generarToken(String username, String role, String email) {
         return JWT.create()
                 .withSubject(username)
                 .withIssuer(jwtProperties.getIssuer())
-                .withClaim("roles", List.of("ROLE_" + role))
+                .withClaim("roles", List.of(role))
+                .withClaim("email", email)
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + jwtProperties.getExpiration()))
                 .sign(Algorithm.HMAC256(jwtProperties.getSecret()));
