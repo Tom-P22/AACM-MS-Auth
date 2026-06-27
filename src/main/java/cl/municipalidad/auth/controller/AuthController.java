@@ -18,10 +18,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Módulo de Seguridad y Autenticación", description = "Endpoints encargados de emitir credenciales válidas y firmadas para interactuar con la red perimetral de microservicios")
 
 public class AuthController {
@@ -41,6 +43,9 @@ public class AuthController {
     })
     public ResponseEntity<DtoAuthResponse> login(
         @Valid @RequestBody DtoAuthRequest request) {
+
+        log.info("Intento de inicio de sesión recibido para el email: {}", request.getEmail());
+
         DtoAuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }

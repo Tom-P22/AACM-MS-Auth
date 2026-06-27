@@ -10,12 +10,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import cl.municipalidad.auth.dto.ErrorResponseDTO;
+import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponseDTO> handleRuntimeException(RuntimeException ex) {
+        log.error("Excepción RuntimeException capturada en el flujo de Auth: {}", ex.getMessage(), ex);
 
         ErrorResponseDTO error = ErrorResponseDTO.builder()
                 .timestamp(LocalDateTime.now())
@@ -32,6 +35,8 @@ public class GlobalExceptionHandler {
 
         FieldError fieldError = ex.getBindingResult().getFieldError();
         String mensajeError = fieldError != null ? fieldError.getDefaultMessage() : "Error de validacion en los datos enviados";
+
+        log.warn("Fallo de validación en los datos de entrada: {}", mensajeError);
 
         ErrorResponseDTO error = ErrorResponseDTO.builder()
                 .timestamp(LocalDateTime.now())
