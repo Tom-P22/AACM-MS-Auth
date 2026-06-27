@@ -44,14 +44,12 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                        "/api/v1/auth/**",
-                        "/api/public/**", 
-                        "/actuator/**", 
-                        "/v3/api-docs", 
-                        "/v3/api-docs/**", 
-                        "/swagger-ui/**", 
-                        "/swagger-ui.html",
-                        "/error"
+        "/api/v1/auth/**",
+                    "/api/v1/auth/doc/**",        
+                    "/api/v1/auth/v3/api-docs/**", 
+                    "/api/public/**", 
+                    "/actuator/**", 
+                    "/error"
                 ).permitAll()
                 .anyRequest().authenticated()
             );
