@@ -17,9 +17,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final RestClient restClient = RestClient.create(); 
+    private final RestClient restClient;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+
+    public AuthService(RestClient.Builder restClientBuilder, JwtService jwtService, PasswordEncoder passwordEncoder) {
+        this.restClient = restClientBuilder.build();
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public DtoAuthResponse login(DtoAuthRequest request) {
 
@@ -29,16 +35,16 @@ public class AuthService {
         try {
             log.debug("Llamando a MS-Usuarios...");
             usuario = restClient.get()
-                    .uri("http://localhost:8081/api/v1/usuarios/internal/buscar/email/" + request.getEmail())
-                    .retrieve()
-                    .body(UsuarioDto.class);
+            .uri("http://ms-usuarios/api/v1/usuarios/internal/buscar/email/" + request.getEmail())
+            .retrieve()
+            .body(UsuarioDto.class);
 
         } catch (Exception e) {
             //Si usuario = 404, entonces:
             log.error("Error al conectar con MS-Usuarios o usuario no encontrado: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o password incorrecto");
         }
-
+        
         if (!usuario.getActivo()) {
             log.error("Login fallido: Usuario {} esta deshabilitado", request.getEmail());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuario o password incorrecto");
@@ -64,4 +70,6 @@ public class AuthService {
              
         return new DtoAuthResponse(token);
     }
+
+    
 }

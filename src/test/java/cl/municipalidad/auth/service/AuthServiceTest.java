@@ -27,7 +27,7 @@ class AuthServiceTest {
     @Mock private RestClient restClient;
     @Mock private JwtService jwtService;
     @Mock private PasswordEncoder passwordEncoder;
-
+    @Mock private RestClient.Builder restClientBuilder;
     @Mock private RestClient.RequestHeadersUriSpec requestHeadersUriSpec;
     @Mock private RestClient.RequestHeadersSpec requestHeadersSpec;
     @Mock private RestClient.ResponseSpec responseSpec;
@@ -36,10 +36,10 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
+
+        when(restClientBuilder.build()).thenReturn(restClient);
         
-        authService = new AuthService(jwtService, passwordEncoder);
-        
-        ReflectionTestUtils.setField(authService, "restClient", restClient);
+        authService = new AuthService(restClientBuilder, jwtService, passwordEncoder);
     }
 
     private void simularFlujoRestClient(UsuarioDto usuarioRetornado) {
