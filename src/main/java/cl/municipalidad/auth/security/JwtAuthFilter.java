@@ -38,7 +38,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return;
     }
     try {
-        String token = authHeader.substring(Bearer.length());
+        String token = authHeader.substring(Bearer.length()).trim();
         DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secret))
             .withIssuer(issuer)
             .build()
