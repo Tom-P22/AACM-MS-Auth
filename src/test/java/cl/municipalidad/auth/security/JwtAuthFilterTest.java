@@ -49,7 +49,7 @@ class JwtAuthFilterTest {
                 .withClaim("roles", List.of("ADMIN"))
                 .sign(Algorithm.HMAC256(secret));
 
-        when(request.getHeader("Authorization")).thenReturn("Bearer" + tokenReal);
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + tokenReal);
 
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
 
